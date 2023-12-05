@@ -1,0 +1,9 @@
+menu "serial frame"
+
+    config LIBTINY_FRAME_SUPPORT
+        bool "Support tiny frame"
+        default y
+        help
+            tiny frame
+
+endmenu
