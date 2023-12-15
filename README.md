@@ -5,5 +5,5 @@
 ### 2. run the wav_play.py 
 
 ## The instruction test the wav play function without SD Card.
-### move the test5s.wav and the play_wav_local.py to the ESP32
-### run the play_wav_local.py
+### 1. move the test5s.wav and the play_wav_local.py to the ESP32
+### 2. run the play_wav_local.py
