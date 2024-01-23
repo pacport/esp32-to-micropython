@@ -35,12 +35,12 @@ jobs:
             make BOARD=ESP32_GENERIC_S3 submodules
             make USER_C_MODULES=../src/micropython.cmake BOARD=ESP32_GENERIC_S3 all
       
-    #   - name: Archive build output artifacts
-    #     uses: actions/upload-artifact@v2
-    #     with:
-    #       name: build
-    #       path: |
-    #         build/bootloader/bootloader.bin
-    #         build/partition_table/partition-table.bin
-    #         build/ota_data_initial.bin
-    #         build/PP01PRO.bin
+      - name: Archive build output artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Archive build output
+          path: |
+            micropython/ports/esp32/build-ESP32_GENERIC_S3/firmware.bin
+            micropython/ports/esp32/build-ESP32_GENERIC_S3/micropython.bin
+            micropython/ports/esp32/build-ESP32_GENERIC_S3/partition_table/partition-table.bin
+            micropython/ports/esp32/build-ESP32_GENERIC_S3/bootloader/bootloader.bin
