@@ -1,0 +1,25 @@
+name: Build and Artifact the ESP-IDF Project
+
+on:
+  push:
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install prerequisites
+        run: |
+          sudo apt-get install git wget flex bison gperf python3 python3-pip python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util
+          cmake --version
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+
+      - name: Install ESP-IDF
+        run:  ./esp-idf/install.sh
+
