@@ -9,6 +9,3 @@
 	path = micropython
 	url = https://github.com/micropython/micropython.git
 	branch = v1.21.0
-[submodule "micropython-camera-driver"]
-	path = micropython-camera-driver
-	url = https://github.com/lemariva/micropython-camera-driver.git
