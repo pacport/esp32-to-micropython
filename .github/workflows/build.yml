@@ -23,3 +23,24 @@ jobs:
       - name: Install ESP-IDF
         run:  ./esp-idf/install.sh
 
+      - name: Set up the environment variables and Build project
+        run:  |
+            source ./esp-idf/export.sh
+            mv esp32-camera esp-idf/components
+            cp -rf micropython-camera-driver/src micropython/ports/esp32
+            cd micropython/ports/esp32
+            echo 'CONFIG_GC2145_SUPPORT=y' >> boards/ESP32_GENERIC_S3/sdkconfig.board
+            echo '#define MODULE_CAMERA_ENABLED  (1)' >> boards/ESP32_GENERIC_S3/mpconfigboard.h
+
+            make BOARD=ESP32_GENERIC_S3 submodules
+            make USER_C_MODULES=../src/micropython.cmake BOARD=ESP32_GENERIC_S3 all
+      
+    #   - name: Archive build output artifacts
+    #     uses: actions/upload-artifact@v2
+    #     with:
+    #       name: build
+    #       path: |
+    #         build/bootloader/bootloader.bin
+    #         build/partition_table/partition-table.bin
+    #         build/ota_data_initial.bin
+    #         build/PP01PRO.bin
