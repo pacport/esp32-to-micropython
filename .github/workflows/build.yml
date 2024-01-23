@@ -36,7 +36,7 @@ jobs:
             make USER_C_MODULES=../src/micropython.cmake BOARD=ESP32_GENERIC_S3 all
       
       - name: Archive build output artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Archive build output
           path: |
