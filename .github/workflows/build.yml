@@ -38,7 +38,7 @@ jobs:
       - name: Archive build output artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Archive build output
+          name: esp32s3-camera
           path: |
             micropython/ports/esp32/build-ESP32_GENERIC_S3/firmware.bin
             micropython/ports/esp32/build-ESP32_GENERIC_S3/micropython.bin
