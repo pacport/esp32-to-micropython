@@ -152,3 +152,62 @@ Read this section if you want to include the camera support to MicroPython from 
     esptool.py --port /dev/ttyUSB0 erase_flash
     esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 build-ESP32_CAM/firmware.bin
     ```
+
+### init GC2145
+```python
+from machine import Pin, I2C
+import camera
+import time
+
+
+PORT0_INPUT = 0x00
+PORT1_INPUT = 0x01
+PORT0_OUTPUT = 0x02
+PORT1_OUTPUT = 0x03
+PORT0_COMFIG = 0x06
+PORT1_COMFIG = 0x07
+OUTPUT_MODE = b'\x00'
+INPUT_MODE = b'\xff'
+
+CAM_EN = 0x40
+i2c_addr = 32
+
+
+p3v3 = Pin(46, Pin.OUT)
+p3v3.on()
+p5v = Pin(45, Pin.OUT)
+p5v.on()
+
+def to_byte(integer: int, n=1):
+    return integer.to_bytes(n, "big")
+i2c = I2C(scl=Pin(18),sda=Pin(17),freq=100000)
+i2c.writeto_mem(i2c_addr, PORT0_COMFIG, OUTPUT_MODE)
+i2c.writeto_mem(i2c_addr, PORT1_COMFIG, OUTPUT_MODE)
+
+i2c.writeto_mem(i2c_addr, PORT0_OUTPUT, to_byte(0xff)) # Initial value is 0xff
+i2c.writeto_mem(i2c_addr, PORT1_OUTPUT, to_byte(0x79)) # Initial value is 0x79
+
+def read_PORT0():
+    return int.from_bytes(i2c.readfrom_mem(i2c_addr, PORT0_INPUT, 1), "big")
+def set_GPIO(pins, status):
+    if pins < 256:
+        data = read_PORT0()
+        if status == 1:
+            data = data | pins
+        else:
+            data = data & ~pins
+        i2c.writeto_mem(i2c_addr, PORT0_OUTPUT, to_byte(data))
+
+set_GPIO(CAM_EN, 0)
+time.sleep_ms(10)
+set_GPIO(CAM_EN, 1)
+time.sleep_ms(10)
+
+camera.init(0, d0=13, d1=47, d2=14, d3=3, d4=12, d5=42, d6=41, d7=39,
+            format=camera.RGB565, framesize=camera.FRAME_SVGA, 
+            xclk_freq=camera.XCLK_20MHz,
+            href=38, vsync=21, reset=-1, pwdn=-1,
+            sioc=18, siod=17, xclk=40, pclk=11, fb_location=camera.PSRAM)
+
+buf = camera.capture()
+```
