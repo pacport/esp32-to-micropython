@@ -25,6 +25,8 @@ jobs:
 
       - name: Set up the environment variables and Build project
         run:  |
+            export ADF_PATH=$(pwd)/esp-adf
+            export ADF_PATH=$(pwd)/esp-idf
             source ./esp-idf/export.sh
             mv esp32-camera esp-idf/components
             cp -rf micropython-camera-driver/src micropython/ports/esp32
@@ -34,6 +36,13 @@ jobs:
 
             make BOARD=ESP32_GENERIC_S3 submodules
             make USER_C_MODULES=../src/micropython.cmake BOARD=ESP32_GENERIC_S3 all
+            cd $IDF_PATH
+            git apply ${ADF_PATH}/idf_patches/idf_v5.0_freertos.patch
+            rm ${IDF_PATH}/components/fatfs/CMakeLists.txt
+            . $IDF_PATH/export.sh
+            cd ../micropython/ports/esp32
+            git apply ${ADF_PATH}/micropython_adf/mp.diff
+            make USER_C_MODULES=${ADF_PATH}/micropython_adf/mod/micropython.cmake BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 all
       
       - name: Archive build output artifacts
         uses: actions/upload-artifact@v4
