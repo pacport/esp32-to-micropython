@@ -26,7 +26,7 @@ jobs:
       - name: Set up the environment variables and Build project
         run:  |
             export ADF_PATH=$(pwd)/esp-adf
-            export ADF_PATH=$(pwd)/esp-idf
+            export IDF_PATH=$(pwd)/esp-idf
             source ./esp-idf/export.sh
             mv esp32-camera esp-idf/components
             cp -rf micropython-camera-driver/src micropython/ports/esp32
