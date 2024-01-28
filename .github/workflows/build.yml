@@ -4,6 +4,10 @@ on:
   push:
 
   workflow_dispatch:
+env:
+  IDF_PATH: /home/runner/work/esp32-to-micropython/esp-idf
+  ADF_PATH: /home/runner/work/esp32-to-micropython/esp-adf
+  
 
 jobs:
   build:
@@ -12,7 +16,7 @@ jobs:
     steps:
       - name: Install prerequisites
         run: |
-          sudo apt-get install git wget flex bison gperf python3 python3-pip python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util
+          #sudo apt-get install git wget flex bison gperf python3 python3-pip python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util
           cmake --version
 
       - name: Checkout repo
@@ -21,24 +25,16 @@ jobs:
           submodules: 'true'
 
       - name: Install ESP-IDF
-        run:  |
-            export ADF_PATH=$(pwd)/esp-adf
-            export IDF_PATH=$(pwd)/esp-idf
-            
-            #./esp-idf/install.sh
+        run:  ./esp-idf/install.sh
 
       - name: Set up the environment variables and Build project
         run:  |
-            echo $ADF_PATH
-            echo $IDF_PATH
-            #export ADF_PATH=$(pwd)/esp-adf
-            #export IDF_PATH=$(pwd)/esp-idf
-            #source ./esp-idf/export.sh
-            #mv esp32-camera esp-idf/components
-            #cp -rf micropython-camera-driver/src micropython/ports/esp32
-            #cd micropython/ports/esp32
-            #echo 'CONFIG_GC2145_SUPPORT=y' >> boards/ESP32_GENERIC_S3/sdkconfig.board
-            #echo '#define MODULE_CAMERA_ENABLED  (1)' >> boards/ESP32_GENERIC_S3/mpconfigboard.h
+            source ./esp-idf/export.sh
+            mv esp32-camera esp-idf/components
+            cp -rf micropython-camera-driver/src micropython/ports/esp32
+            cd micropython/ports/esp32
+            echo 'CONFIG_GC2145_SUPPORT=y' >> boards/ESP32_GENERIC_S3/sdkconfig.board
+            echo '#define MODULE_CAMERA_ENABLED  (1)' >> boards/ESP32_GENERIC_S3/mpconfigboard.h
 
             #make BOARD=ESP32_GENERIC_S3 submodules
             #make USER_C_MODULES=../src/micropython.cmake BOARD=ESP32_GENERIC_S3 all
