@@ -5,8 +5,8 @@ on:
 
   workflow_dispatch:
 env:
-  IDF_PATH: /home/runner/work/esp32-to-micropython/esp-idf
-  ADF_PATH: /home/runner/work/esp32-to-micropython/esp-adf
+  IDF_PATH: /home/runner/work/esp32-to-micropython/esp32-to-micropython/esp-idf
+  ADF_PATH: /home/runner/work/esp32-to-micropython/esp32-to-micropython/esp-adf
   
 
 jobs:
@@ -16,42 +16,40 @@ jobs:
     steps:
       - name: Install prerequisites
         run: |
-          #sudo apt-get install git wget flex bison gperf python3 python3-pip python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util
+          sudo apt-get install git wget flex bison gperf python3.11 python3-pip python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util
           cmake --version
+          python3 --version
 
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
-          submodules: 'true'
+          submodules: 'recursive'
 
       - name: Install ESP-IDF
-        run:  ./esp-idf/install.sh
-
-      - name: Set up the environment variables and Build project
         run:  |
-            source ./esp-idf/export.sh
-            mv esp32-camera esp-idf/components
-            cp -rf micropython-camera-driver/src micropython/ports/esp32
+            pwd
+            ls -lh
+            ./esp-idf/install.sh
+            . $IDF_PATH/export.sh
             cd micropython/ports/esp32
-            echo 'CONFIG_GC2145_SUPPORT=y' >> boards/ESP32_GENERIC_S3/sdkconfig.board
-            echo '#define MODULE_CAMERA_ENABLED  (1)' >> boards/ESP32_GENERIC_S3/mpconfigboard.h
+            make BOARD=ESP32_GENERIC_S3 submodules
+            make BOARD=ESP32_GENERIC_S3 all
 
-            #make BOARD=ESP32_GENERIC_S3 submodules
-            #make USER_C_MODULES=../src/micropython.cmake BOARD=ESP32_GENERIC_S3 all
-            #cd $IDF_PATH
-            #git apply ${ADF_PATH}/idf_patches/idf_v5.0_freertos.patch
-            #rm ${IDF_PATH}/components/fatfs/CMakeLists.txt
-            #. $IDF_PATH/export.sh
-            #cd ../micropython/ports/esp32
-            #git apply ${ADF_PATH}/micropython_adf/mp.diff
-            #make USER_C_MODULES=${ADF_PATH}/micropython_adf/mod/micropython.cmake BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 all
-      
+      - name: Set up the environment variables
+        run:  |
+            cd $IDF_PATH
+            git apply ${ADF_PATH}/idf_patches/idf_v5.0_freertos.patch
+            rm ${IDF_PATH}/components/fatfs/CMakeLists.txt
+            . $IDF_PATH/export.sh
+            cd ../micropython/ports/esp32
+            git apply ${ADF_PATH}/micropython_adf/mp.diff
+      - name: Build project
+        run: make USER_C_MODULES=${ADF_PATH}/micropython_adf/mod/micropython.cmake BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 all
+            
       - name: Archive build output artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: esp32s3-camera
+          name: esp32s3-audio
           path: |
-            micropython/ports/esp32/build-ESP32_GENERIC_S3/firmware.bin
-            micropython/ports/esp32/build-ESP32_GENERIC_S3/micropython.bin
-            micropython/ports/esp32/build-ESP32_GENERIC_S3/partition_table/partition-table.bin
-            micropython/ports/esp32/build-ESP32_GENERIC_S3/bootloader/bootloader.bin
+            micropython/ports/esp32/build-korvo2v3/firmware.bin
+
