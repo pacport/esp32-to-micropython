@@ -31,9 +31,9 @@ jobs:
             ls -lh
             ./esp-idf/install.sh
             . $IDF_PATH/export.sh
-            cd micropython/ports/esp32
-            make BOARD=ESP32_GENERIC_S3 submodules
-            make BOARD=ESP32_GENERIC_S3 all
+            #cd micropython/ports/esp32
+            
+            #make BOARD=ESP32_GENERIC_S3 all
 
       - name: Set up the environment variables
         run:  |
@@ -43,6 +43,7 @@ jobs:
             . $IDF_PATH/export.sh
             cd ../micropython/ports/esp32
             git apply ${ADF_PATH}/micropython_adf/mp.diff
+            make BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 submodules
             make USER_C_MODULES=${ADF_PATH}/micropython_adf/mod/micropython.cmake BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 all
             
       - name: Archive build output artifacts
