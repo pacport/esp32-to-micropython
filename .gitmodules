@@ -1,14 +1,11 @@
 [submodule "esp-idf"]
 	path = esp-idf
 	url = https://github.com/espressif/esp-idf.git
-	branch = v5.0.2
-[submodule "esp32-camera"]
-	path = esp32-camera
-	url = https://github.com/espressif/esp32-camera.git
+	branch = v5.0.4
 [submodule "micropython"]
 	path = micropython
 	url = https://github.com/micropython/micropython.git
 	branch = v1.21.0
 [submodule "esp-adf"]
 	path = esp-adf
-	url = https://github.com/espressif/esp-adf.git
+	url = https://github.com/pacport/esp-adf-master.git
