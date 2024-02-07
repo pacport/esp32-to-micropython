@@ -31,11 +31,9 @@ jobs:
             ls -lh
             ./esp-idf/install.sh
             . $IDF_PATH/export.sh
-            #cd micropython/ports/esp32
-            
-            #make BOARD=ESP32_GENERIC_S3 all
+            cp -rf esp32-camera ./esp-idf/components
 
-      - name: Set up the environment variables
+      - name: apply patch and build firmware.bin
         run:  |
             cd $IDF_PATH
             git apply ${ADF_PATH}/idf_patches/idf_v5.0_freertos.patch
