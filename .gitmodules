@@ -11,4 +11,4 @@
 	branch = v1.21.0
 [submodule "esp-adf"]
 	path = esp-adf
-	url = https://github.com/pacport/esp-adf-master.git
+	url = https://github.com/pacport/esp-adf.git
