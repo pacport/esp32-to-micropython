@@ -10,6 +10,8 @@
 #### Press Button 7 : network green led blink 
 #### Press Button 8 : network red led blink 
 
+## run ethernet.py to test ethernet 
+
 ## TinyFrame
 Use the following open source library
 https://github.com/MightyPork/PonyFrame/blob/master/TinyFrame.py
