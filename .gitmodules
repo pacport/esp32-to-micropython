@@ -7,8 +7,8 @@
 	url = https://github.com/espressif/esp32-camera.git
 [submodule "micropython"]
 	path = micropython
-	url = https://github.com/micropython/micropython.git
-	branch = v1.21.0
+	url = https://github.com/pacport/micropython.git
+	branch = pacport
 [submodule "esp-adf"]
 	path = esp-adf
 	url = https://github.com/pacport/esp-adf.git
