@@ -11,6 +11,7 @@
 #### Press Button 8 : network red led blink 
 
 ## run ethernet.py to test ethernet 
+## run bleTest.py to test bluetooth 
 
 ## TinyFrame
 Use the following open source library
