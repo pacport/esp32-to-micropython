@@ -281,7 +281,7 @@ if __name__ == '__main__':
     argparser.add_argument('-v', '--version', type=str, default='v1.0', help='file version, controlled by user')
     args = argparser.parse_args()
 
-    if get_input('The bin version will be: %s\r\nContinue?(y/N): ' % (args.version)).lower() == 'y':
+    if True or get_input('The bin version will be: %s\r\nContinue?(y/N): ' % (args.version)).lower() == 'y':
         file_list = [x for x in os.listdir(args.resources) if ((x.endswith(".wav")) or (x.endswith(".mp3")))]
         file_list.sort()
 
