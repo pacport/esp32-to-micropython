@@ -24,7 +24,7 @@ jobs:
       - name: Archive build output artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: audio-tone.bin
-          path: audio/audio-tone.bin
+          name: audio_tone.bin
+          path: audio/audio_tone.bin
 
 
