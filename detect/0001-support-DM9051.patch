@@ -1,0 +1,214 @@
+From 603aa48b8c338cbcddc9c81db11c1d71dc58a07d Mon Sep 17 00:00:00 2001
+From: qk-mac <giggledefine@gmail.com>
+Date: Mon, 19 Feb 2024 23:38:23 +0900
+Subject: [PATCH] support DM9051
+
+---
+ ports/esp32/esp32_common.cmake |   1 +
+ ports/esp32/network_lan.c      | 139 ++++++---------------------------
+ 2 files changed, 24 insertions(+), 116 deletions(-)
+
+diff --git a/ports/esp32/esp32_common.cmake b/ports/esp32/esp32_common.cmake
+index f5219048f..f4b2a092e 100644
+--- a/ports/esp32/esp32_common.cmake
++++ b/ports/esp32/esp32_common.cmake
+@@ -139,6 +139,7 @@ list(APPEND IDF_COMPONENTS
+     ulp
+     vfs
+     xtensa
++    boards
+ )
+ 
+ # Register the main IDF component.
+diff --git a/ports/esp32/network_lan.c b/ports/esp32/network_lan.c
+index 855770044..f4e24a3ea 100644
+--- a/ports/esp32/network_lan.c
++++ b/ports/esp32/network_lan.c
+@@ -44,6 +44,7 @@
+ #endif
+ 
+ #include "modnetwork.h"
++#include "extmod/modnetwork.h"
+ 
+ typedef struct _lan_if_obj_t {
+     base_if_obj_t base;
+@@ -127,9 +128,9 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
+ 
+     self->mdc_pin = GET_PIN(ARG_mdc);
+     self->mdio_pin = GET_PIN(ARG_mdio);
+-    self->phy_power_pin = GET_PIN(ARG_power);
+-    self->phy_cs_pin = GET_PIN(ARG_cs);
+-    self->phy_int_pin = GET_PIN(ARG_int);
++    self->phy_power_pin = -1;//GET_PIN(ARG_power);
++    self->phy_cs_pin = 0;//GET_PIN(ARG_cs);
++    self->phy_int_pin = 44;
+ 
+     if (args[ARG_phy_addr].u_int < 0x00 || args[ARG_phy_addr].u_int > 0x1f) {
+         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy address"));
+@@ -157,123 +158,28 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
+         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy type"));
+     }
+ 
+-    eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
+-    #if CONFIG_IDF_TARGET_ESP32
+-    eth_esp32_emac_config_t esp32_config = ETH_ESP32_EMAC_DEFAULT_CONFIG();
+-    #endif
+-
+     esp_eth_mac_t *mac = NULL;
+-
+-    #if CONFIG_IDF_TARGET_ESP32
+-    // Dynamic ref_clk configuration.
+-    if (args[ARG_ref_clk_mode].u_int != -1) {
+-        // Map the GPIO_MODE constants to EMAC_CLK constants.
+-        esp32_config.clock_config.rmii.clock_mode =
+-            args[ARG_ref_clk_mode].u_int == GPIO_MODE_INPUT ? EMAC_CLK_EXT_IN : EMAC_CLK_OUT;
+-    }
+-    if (args[ARG_ref_clk].u_obj != mp_const_none) {
+-        esp32_config.clock_config.rmii.clock_gpio = machine_pin_get_id(args[ARG_ref_clk].u_obj);
+-    }
+-    #endif
+-
++    eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
+     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
+     phy_config.phy_addr = self->phy_addr;
+     phy_config.reset_gpio_num = self->phy_power_pin;
+     self->phy = NULL;
++    spi_device_interface_config_t devcfg = {
++        .command_bits = 1,
++        .address_bits = 7,
++        .mode = 0,
++        .cs_ena_pretrans = 0,
++        .cs_ena_posttrans = 1,
++        .flags = SPI_DEVICE_POSITIVE_CS,
++        .clock_speed_hz = 16 * 1000 * 1000,
++        .queue_size = 20
++    };
++    spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
++    eth_dm9051_config_t chip_config = ETH_DM9051_DEFAULT_CONFIG(host, &devcfg);
++    chip_config.int_gpio_num = self->phy_int_pin;
++    mac = esp_eth_mac_new_dm9051(&chip_config, &mac_config);
++    self->phy = esp_eth_phy_new_dm9051(&phy_config);
+ 
+-    #if CONFIG_ETH_USE_SPI_ETHERNET
+-    spi_device_handle_t spi_handle = NULL;
+-    if (IS_SPI_PHY(args[ARG_phy_type].u_int)) {
+-        spi_device_interface_config_t devcfg = {
+-            .mode = 0,
+-            .clock_speed_hz = MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ * 1000 * 1000,
+-            .queue_size = 20,
+-            .spics_io_num = self->phy_cs_pin,
+-        };
+-        switch (args[ARG_phy_type].u_int) {
+-            #if CONFIG_ETH_SPI_ETHERNET_DM9051
+-            case PHY_DM9051: {
+-                devcfg.command_bits = 1;
+-                devcfg.address_bits = 7;
+-                break;
+-            }
+-            #endif
+-            #if CONFIG_ETH_SPI_ETHERNET_W5500
+-            case PHY_W5500: {
+-                devcfg.command_bits = 16;
+-                devcfg.address_bits = 8;
+-                break;
+-            }
+-            #endif
+-        }
+-        spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
+-        if (spi_bus_add_device(host, &devcfg, &spi_handle) != ESP_OK) {
+-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("spi_bus_add_device failed"));
+-        }
+-    }
+-    #endif
+-
+-    switch (args[ARG_phy_type].u_int) {
+-        #if CONFIG_IDF_TARGET_ESP32
+-        case PHY_LAN8710:
+-        case PHY_LAN8720:
+-            self->phy = esp_eth_phy_new_lan87xx(&phy_config);
+-            break;
+-        case PHY_IP101:
+-            self->phy = esp_eth_phy_new_ip101(&phy_config);
+-            break;
+-        case PHY_RTL8201:
+-            self->phy = esp_eth_phy_new_rtl8201(&phy_config);
+-            break;
+-        case PHY_DP83848:
+-            self->phy = esp_eth_phy_new_dp83848(&phy_config);
+-            break;
+-        case PHY_KSZ8041:
+-        case PHY_KSZ8081:
+-            self->phy = esp_eth_phy_new_ksz80xx(&phy_config);
+-            break;
+-        #endif
+-        #if CONFIG_ETH_USE_SPI_ETHERNET
+-        #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
+-        case PHY_KSZ8851SNL: {
+-            eth_ksz8851snl_config_t chip_config = ETH_KSZ8851SNL_DEFAULT_CONFIG(spi_handle);
+-            chip_config.int_gpio_num = self->phy_int_pin;
+-            mac = esp_eth_mac_new_ksz8851snl(&chip_config, &mac_config);
+-            self->phy = esp_eth_phy_new_ksz8851snl(&phy_config);
+-            break;
+-        }
+-        #endif
+-        #if CONFIG_ETH_SPI_ETHERNET_DM9051
+-        case PHY_DM9051: {
+-            eth_dm9051_config_t chip_config = ETH_DM9051_DEFAULT_CONFIG(spi_handle);
+-            chip_config.int_gpio_num = self->phy_int_pin;
+-            mac = esp_eth_mac_new_dm9051(&chip_config, &mac_config);
+-            self->phy = esp_eth_phy_new_dm9051(&phy_config);
+-            break;
+-        }
+-        #endif
+-        #if CONFIG_ETH_SPI_ETHERNET_W5500
+-        case PHY_W5500: {
+-            eth_w5500_config_t chip_config = ETH_W5500_DEFAULT_CONFIG(spi_handle);
+-            chip_config.int_gpio_num = self->phy_int_pin;
+-            mac = esp_eth_mac_new_w5500(&chip_config, &mac_config);
+-            self->phy = esp_eth_phy_new_w5500(&phy_config);
+-            break;
+-        }
+-        #endif
+-        #endif
+-    }
+-
+-    #if CONFIG_IDF_TARGET_ESP32
+-    if (!IS_SPI_PHY(args[ARG_phy_type].u_int)) {
+-        if (self->mdc_pin == -1 || self->mdio_pin == -1) {
+-            mp_raise_ValueError(MP_ERROR_TEXT("mdc and mdio must be specified"));
+-        }
+-        esp32_config.smi_mdc_gpio_num = self->mdc_pin;
+-        esp32_config.smi_mdio_gpio_num = self->mdio_pin;
+-        mac = esp_eth_mac_new_esp32(&esp32_config, &mac_config);
+-    }
+-    #endif
+ 
+     if (esp_netif_init() != ESP_OK) {
+         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_init failed"));
+@@ -321,6 +227,7 @@ STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
+ 
+     if (n_args > 1) {
+         if (mp_obj_is_true(args[1])) {
++            esp_netif_set_hostname(self->base.netif, mod_network_hostname_data);
+             self->base.active = (esp_eth_start(self->eth_handle) == ESP_OK);
+             if (!self->base.active) {
+                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed"));
+@@ -344,7 +251,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_status_obj, lan_status);
+ 
+ STATIC mp_obj_t lan_isconnected(mp_obj_t self_in) {
+     lan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
+-    return self->base.active ? mp_obj_new_bool(self->phy->get_link(self->phy) == ETH_LINK_UP) : mp_const_false;
++    return mp_obj_new_bool(self->base.active && (eth_status == ETH_GOT_IP));
+ }
+ STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_isconnected_obj, lan_isconnected);
+ 
+@@ -422,4 +329,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
+     locals_dict, &lan_if_locals_dict
+     );
+ 
+-#endif
++#endif
+\ No newline at end of file
+-- 
+2.42.0
+
