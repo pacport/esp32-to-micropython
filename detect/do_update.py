@@ -104,3 +104,14 @@ def update_battery(frame):
     mode	= data[3]
     print(f"PWR: {power_reason}, VOLT: {volt}, LEVEL:{level}, MODE:{mode}")
     
+
+def nfc_in(frame):
+    print("nfc card was touched")
+    data = extract_data(frame)
+    uid_len = data[1]
+    meta_len = data[2]
+    print("uid= " + data[3:uid_len])
+    print("meta= " + data[3+uid_len:meta_len])
+
+def nfc_out(frame):
+    print("nfc card was removed")

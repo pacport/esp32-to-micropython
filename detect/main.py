@@ -18,6 +18,10 @@ def fallback_listener(tf, frame):
         update_battery(frame)
     elif frame.type == OBJID_TEMP:
         update_temperature(frame)
+    elif frame.type == OBJID_NFC_IN:
+        nfc_in(frame)
+    elif frame.type == OBJID_NFC_OUT:
+        nfc_out(frame)
     
 def main():    
     p3v3 = Pin(46, Pin.OUT)
@@ -25,6 +29,7 @@ def main():
 
     p5v = Pin(45, Pin.OUT)
     p5v.on()
+    time.sleep_ms(100)
 
     uart1 = UART(1, baudrate=115200, tx=5, rx=4)
     tf = TF.TinyFrame(0)
@@ -40,6 +45,7 @@ def main():
     lock.init(tf)
     LED.init()
     #tf.send(0x19,bytearray([0,2,0,0]))
+    tf.send(0x46,bytearray([0,4,0x73,0,1,0])) # turn on nfc
     while True:
         c = uart1.read(1)
         if c is not None:
