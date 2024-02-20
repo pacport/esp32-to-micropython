@@ -10,6 +10,8 @@
 #### Press Button 7 : network green led blink 
 #### Press Button 8 : network red led blink 
 
+#### Touch nfc card to test nfc
+
 ## run ethernet.py to test ethernet 
 ## run bleTest.py to test bluetooth 
 
