@@ -52,6 +52,6 @@ jobs:
       - name: Archive build output artifacts2
         uses: actions/upload-artifact@v4
         with:
-          name: esp32s3-audio
+          name: esp32s3-audio2
           path: |
             micropython-esp32/ports/esp32/build-korvo2v3/micropython.bin
