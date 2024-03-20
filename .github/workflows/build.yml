@@ -48,5 +48,6 @@ jobs:
         with:
           name: esp32s3-audio
           path: |
-            micropython/ports/esp32/build-korvo2v3/firmware.bin
-	    micropython/ports/esp32/build-korvo2v3/micropython.bin
+            micropython-esp32/ports/esp32/build-korvo2v3/firmware.bin
+	    micropython-esp32/ports/esp32/build-korvo2v3/micropython.bin
+     
