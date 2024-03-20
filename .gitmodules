@@ -12,3 +12,6 @@
 [submodule "esp-adf"]
 	path = esp-adf
 	url = https://github.com/pacport/esp-adf.git
+[submodule "micropython-esp32"]
+	path = micropython-esp32
+	url = https://github.com/pacport/micropython-esp32.git
