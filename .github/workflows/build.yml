@@ -46,6 +46,12 @@ jobs:
       - name: Archive build output artifacts
         uses: actions/upload-artifact@v4
         with:
-	    name: esp32s3-firmware
-	    path: |
-		micropython-esp32/ports/esp32/build-korvo2v3/firmware.bin
+          name: esp32s3-audio
+          path: |
+            micropython-esp32/ports/esp32/build-korvo2v3/firmware.bin
+      - name: Archive build output artifacts2
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32s3-audio
+          path: |
+            micropython-esp32/ports/esp32/build-korvo2v3/micropython.bin
