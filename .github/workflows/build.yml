@@ -39,8 +39,7 @@ jobs:
             git apply ${ADF_PATH}/idf_patches/idf_v5.0_freertos.patch
             rm ${IDF_PATH}/components/fatfs/CMakeLists.txt
             . $IDF_PATH/export.sh
-            cd ../micropython/ports/esp32
-            git apply ${ADF_PATH}/micropython_adf/mp.diff
+            cd ../micropython-esp32/ports/esp32
             make BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 submodules
             make USER_C_MODULES=${ADF_PATH}/micropython_adf/mod/micropython.cmake BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 all
             
@@ -50,4 +49,4 @@ jobs:
           name: esp32s3-audio
           path: |
             micropython/ports/esp32/build-korvo2v3/firmware.bin
-
+	    micropython/ports/esp32/build-korvo2v3/micropython.bin
