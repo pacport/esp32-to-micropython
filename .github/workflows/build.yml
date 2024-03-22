@@ -44,15 +44,18 @@ jobs:
             make BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 submodules
             make USER_C_MODULES=${ADF_PATH}/micropython_adf/mod/micropython.cmake BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 all
             
-      - name: Archive build output artifacts
+      - name: Archive build output firmware.bin
         uses: actions/upload-artifact@v4
         with:
           name: esp32s3-audio
           path: |
             micropython-esp32/ports/esp32/build-korvo2v3/firmware.bin
-      - name: Archive build output artifacts2
+      - name: Archive build output micropython.bin
         uses: actions/upload-artifact@v4
         with:
           name: esp32s3-audio2
           path: |
             micropython-esp32/ports/esp32/build-korvo2v3/micropython.bin
+            micropython-esp32/ports/esp32/build-korvo2v3/bootloader/bootloader.bin
+            micropython-esp32/ports/esp32/build-korvo2v3/partition_table/partition-table.bin
+            micropython-esp32/ports/esp32/build-korvo2v3/ota_data_initial.bin
