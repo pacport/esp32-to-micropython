@@ -59,11 +59,12 @@ def connectWIFI(wifiCfg=None):
             f = open('wifipassword.json', 'w')
             f.write(ujson.dumps(wifiCfg))
             f.close()
-            return
+            return True
         wlan.disconnect()
     except:
         pass
-    esp_audio.play("embed://tone/16_wifi_conn_failed.mp3")      
+    esp_audio.play("embed://tone/16_wifi_conn_failed.mp3")
+    return False
 
 def connect(wifiCfg=None):
     global Networking
@@ -73,13 +74,13 @@ def connect(wifiCfg=None):
     if wifiCfg is not None or connectEthernet() == False:
         print("use wifi")
         TCA9555.blink_NET_LED_RED()
-        connectWIFI(wifiCfg)
-        Networking = 'Wifi'
+        if connectWIFI(wifiCfg):
+            Networking = 'Wifi'
     else:
         Networking = 'Ethernet'
         
     TCA9555.stop_blink_NET_LED()
-    if test_network():
+    if Networking is not None:
         TCA9555.tca9555.set_gpio(TCA9555.NET_LED_RED, 1)
         TCA9555.tca9555.set_gpio(TCA9555.NET_LED_GREEN, 0)
     else:
@@ -87,3 +88,4 @@ def connect(wifiCfg=None):
         TCA9555.tca9555.set_gpio(TCA9555.NET_LED_GREEN, 1)
         Networking = None
     return Networking  
+
