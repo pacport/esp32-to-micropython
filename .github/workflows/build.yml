@@ -40,7 +40,7 @@ jobs:
             rm ${IDF_PATH}/components/fatfs/CMakeLists.txt
             . $IDF_PATH/export.sh
             cd ../micropython-esp32/ports/esp32
-            cp ../../../detect/* ./modules
+            #cp ../../../detect/* ./modules
             make BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 submodules
             make USER_C_MODULES=${ADF_PATH}/micropython_adf/mod/micropython.cmake BOARD_DIR=${ADF_PATH}/micropython_adf/boards/korvo2v3 all
             
