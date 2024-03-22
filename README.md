@@ -1,9 +1,8 @@
 # esp32-to-micropython
 
-## The instruction of using the wav_play.py
-### 1. Move the Test2.wav into the SD card.
-### 2. run the wav_play.py 
+# Flash bin to esp32
+1. pip3 install esptool
+2. esptool.py erase_flash
+3. esptool.py -b 460800 --before default_reset --after no_reset --chip esp32s3  write_flash --flash_mode dio --flash_size 16MB --flash_freq 80m 0x0 bootloader/bootloader.bin 0x8000 partition_table/partition-table.bin 0x1c000 ota_data_initial.bin 0x20000 micropython.bin
 
-## The instruction test the wav play function without SD Card.
-### 1. move the test5s.wav and the play_wav_local.py to the ESP32
-### 2. run the play_wav_local.py
+
